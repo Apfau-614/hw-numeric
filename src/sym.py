@@ -290,7 +290,7 @@ def _sym_str(e, prec):
         s = '{}*{}'.format(_sym_str(e.left, 2), _sym_str(e.right, 2))
         return '({})'.format(s) if prec > 1 else s
     if isinstance(e, Pow):
-        s = '{}^{}'.format(_sym_str(e.base, 3), e.exp)
+        s = '{}**{}'.format(_sym_str(e.base, 3), e.exp)
         return '({})'.format(s) if prec > 2 else s
     if isinstance(e, Sin):
         return 'sin({})'.format(e.arg)
