@@ -11,7 +11,7 @@ from hypothesis import given
 import hypothesis.strategies as st
 
 from src.dual import Dual, sin, cos, exp, log
-from tests.strategies import floats, pos_floats
+from tests.strategies import floats, pos_floats, dual_st
 
 
 # ---------------------------------------------------------------------------
@@ -91,3 +91,17 @@ def test_elementary_functions_accept_floats():
 def test_not_implemented_equality():
     assert not (Dual(1.0, 0.0) == 1)
     assert Dual(1.0, 0.0) != 1
+
+
+# ---------------------------------------------------------------------------
+# repr round trip and str notation
+# ---------------------------------------------------------------------------
+
+@given(dual_st)
+def test_repr_round_trips(d):
+    assert eval(repr(d)) == d
+
+
+def test_str_shows_value_and_derivative():
+    assert str(Dual(1, 2)) == '1 + 2ε'
+    assert str(Dual(3, 1) * Dual(2, 1)) == '6 + 5ε'

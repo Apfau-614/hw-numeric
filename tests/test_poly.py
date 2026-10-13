@@ -64,6 +64,51 @@ def test_hash_eq_contract():
     assert a == b and hash(a) == hash(b)
 
 
+# ---------------------------------------------------------------------------
+# repr round trip and str notation
+# ---------------------------------------------------------------------------
+
+@given(poly_st)
+def test_repr_round_trips(p):
+    assert eval(repr(p)) == p
+
+
+def test_str_zero_polynomial():
+    assert str(Poly([0])) == '0'
+    assert str(Poly([0, 0, 0])) == '0'
+
+
+def test_str_constant():
+    assert str(Poly([5])) == '5'
+    assert str(Poly([-5])) == '-5'
+
+
+def test_str_suppresses_unit_coefficient():
+    assert str(Poly([0, 1])) == 'x'
+    assert str(Poly([0, 0, 1])) == 'x**2'
+    assert str(Poly([0, -1])) == '-x'
+    assert str(Poly([0, 0, -1])) == '-x**2'
+
+
+def test_str_suppresses_zero_coefficients():
+    assert str(Poly([1, 0, 2])) == '2x**2 + 1'
+    assert str(Poly([1, 0, 0, 1])) == 'x**3 + 1'
+
+
+def test_str_descending_degree():
+    assert str(Poly([1, 2, 3])) == '3x**2 + 2x + 1'
+
+
+def test_str_signs():
+    assert str(Poly([1, -1])) == '-x + 1'
+    assert str(Poly([-1, 1])) == 'x - 1'
+    assert str(Poly([1, -1, 0, 1])) == 'x**3 - x + 1'
+
+
+def test_str_of_binomial_square():
+    assert str(Poly([1, 1]) ** 2) == 'x**2 + 2x + 1'
+
+
 def test_iadd_returns_self():
     q = Poly([3, 4])
     q_id = id(q)

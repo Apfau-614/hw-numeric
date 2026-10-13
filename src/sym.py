@@ -55,6 +55,9 @@ class Sym:
     Mul(left=Var(name='x'), right=Const(value=2))
     '''
 
+    def __str__(self):
+        return _sym_str(self, 0)
+
     def __add__(self, other):
         return Add(self, _wrap(other))
 
@@ -264,6 +267,40 @@ class Log(Sym):
 
     def variables(self):
         return self.arg.variables()
+
+
+def _sym_str(e, prec):
+    '''
+    Render a Sym tree as infix notation, inserting parentheses where
+    the surrounding operator binds more tightly than the child does.
+    prec is the precedence of the enclosing context: 0 for `+`/`-`,
+    1 for `*`, 2 for `**`, 3 inside a call argument or power base.
+    '''
+    if isinstance(e, Const):
+        return str(e.value)
+    if isinstance(e, Var):
+        return e.name
+    if isinstance(e, Add):
+        s = '{} + {}'.format(_sym_str(e.left, 1), _sym_str(e.right, 1))
+        return '({})'.format(s) if prec > 0 else s
+    if isinstance(e, Mul):
+        if isinstance(e.left, Const) and e.left.value == -1:
+            s = '-{}'.format(_sym_str(e.right, 2))
+            return '({})'.format(s) if prec > 1 else s
+        s = '{}*{}'.format(_sym_str(e.left, 2), _sym_str(e.right, 2))
+        return '({})'.format(s) if prec > 1 else s
+    if isinstance(e, Pow):
+        s = '{}^{}'.format(_sym_str(e.base, 3), e.exp)
+        return '({})'.format(s) if prec > 2 else s
+    if isinstance(e, Sin):
+        return 'sin({})'.format(e.arg)
+    if isinstance(e, Cos):
+        return 'cos({})'.format(e.arg)
+    if isinstance(e, Exp):
+        return 'exp({})'.format(e.arg)
+    if isinstance(e, Log):
+        return 'log({})'.format(e.arg)
+    return repr(e)
 
 
 def partial(e, name):

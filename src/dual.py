@@ -49,9 +49,22 @@ class Dual:
     False
     >>> hash(Dual(1, 2)) == hash(Dual(1, 2))
     True
+
+    The `repr` is the constructor call, so `eval(repr(x))` recovers x,
+    and `str` is the usual `v + d*epsilon` notation:
+
+    >>> eval(repr(Dual(1, 2))) == Dual(1, 2)
+    True
+    >>> print(Dual(1, 2))
+    1 + 2ε
+    >>> print(Dual(1, 2) + Dual(3, 4))
+    4 + 6ε
     '''
     v: object
     d: object
+
+    def __str__(self):
+        return '{} + {}ε'.format(self.v, self.d)
 
     def __add__(self, other):
         if isinstance(other, Dual):

@@ -46,6 +46,36 @@ from fractions import Fraction
 KARATSUBA_THRESHOLD = 32
 
 
+def _poly_str(coeffs):
+    '''
+    Render a coefficient list as `3x**2 + 2x + 1`.
+
+    Terms come out in descending degree.  Zero coefficients are
+    skipped, unit coefficients are suppressed (`x` rather than `1x`),
+    and the sign of the leading term is folded into its coefficient.
+    '''
+    if all(c == 0 for c in coeffs):
+        return '0'
+    terms = []
+    for i in range(len(coeffs) - 1, -1, -1):
+        c = coeffs[i]
+        if c == 0:
+            continue
+        if i == 0:
+            body = str(abs(c))
+        elif i == 1:
+            body = 'x' if abs(c) == 1 else '{}x'.format(abs(c))
+        elif abs(c) == 1:
+            body = 'x**{}'.format(i)
+        else:
+            body = '{}x**{}'.format(abs(c), i)
+        terms.append((c < 0, body))
+    out = ('-' if terms[0][0] else '') + terms[0][1]
+    for neg, body in terms[1:]:
+        out += (' - ' if neg else ' + ') + body
+    return out
+
+
 class Poly:
     '''
     A dense polynomial with rational coefficients.
@@ -78,6 +108,32 @@ class Poly:
     True
     >>> len({Poly([1, 2]), Poly([1, 2]), Poly([3, 4])})
     2
+
+    The `repr` is the constructor call, so `eval(repr(p)) == p` for
+    every Poly.  The `str` is the usual algebraic notation, with terms
+    in descending degree, unit coefficients suppressed, and zero
+    coefficients skipped.  The zero polynomial prints as `0`:
+
+    >>> eval(repr(Poly([1, 2, 3]))) == Poly([1, 2, 3])
+    True
+    >>> print(Poly([1, 2, 3]))
+    3x**2 + 2x + 1
+    >>> print(Poly([0]))
+    0
+    >>> print(Poly([5]))
+    5
+    >>> print(Poly([-5]))
+    -5
+    >>> print(Poly([1, 1]))
+    x + 1
+    >>> print(Poly([0, 1]))
+    x
+    >>> print(Poly([0, 0, -1]))
+    -x**2
+    >>> print(Poly([1, -1, 0, 1]))
+    x**3 - x + 1
+    >>> print(Poly([1, 0, 2]))
+    2x**2 + 1
     '''
 
     def __init__(self, coeffs):
@@ -90,6 +146,9 @@ class Poly:
 
     def __repr__(self):
         return 'Poly({!r})'.format(self.coeffs)
+
+    def __str__(self):
+        return _poly_str(self.coeffs)
 
     def __eq__(self, other):
         if not isinstance(other, Poly):

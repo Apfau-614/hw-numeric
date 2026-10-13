@@ -11,6 +11,7 @@ The reachable expressions are restricted to the polynomial fragment
 so that the symbolic partial does not blow up.
 '''
 import math
+from fractions import Fraction
 
 from hypothesis import assume, given
 import hypothesis.strategies as st
@@ -119,3 +120,37 @@ def test_add_is_not_commutative_syntactically():
     assert a != b
     # but they evaluate to the same number
     assert a.eval({'x': 2.0}) == b.eval({'x': 2.0})
+
+
+# ---------------------------------------------------------------------------
+# repr round trip and str notation
+# ---------------------------------------------------------------------------
+
+@given(sym_st(3))
+def test_repr_round_trips(e):
+    assert eval(repr(e)) == e
+
+
+def test_str_polynomial():
+    x = Var('x')
+    assert str(x ** 2 + 3 * x) == 'x**2 + 3*x'
+
+
+def test_str_parenthesizes_lower_precedence_children():
+    x = Var('x')
+    assert str((x + 1) ** 2) == '(x + 1)**2'
+    assert str(x * (x + 1)) == 'x*(x + 1)'
+
+
+def test_str_negation():
+    x = Var('x')
+    assert str(-x) == '-x'
+    assert str(-x + 1) == '-x + 1'
+
+
+def test_str_transcendental():
+    x = Var('x')
+    assert str(Sin(x)) == 'sin(x)'
+    assert str(Cos(x)) == 'cos(x)'
+    assert str(Exp(x)) == 'exp(x)'
+    assert str(Log(x)) == 'log(x)'
