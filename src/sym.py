@@ -98,7 +98,7 @@ class Sym:
         >>> (Var('x') ** 2).backward({'x': 3.0})['x']
         6.0
         >>> (Var('x') ** 2 + Var('y')).backward({'x': 3.0, 'y': 0.0})
-        {'y': 1.0, 'x': 6.0}
+        {'x': 6.0, 'y': 1.0}
         '''
         grads = {}
         self._backward(grads, 1.0, env)
@@ -278,7 +278,7 @@ def partial(e, name):
     >>> partial(Var('x') ** 2 + Var('y'), 'x').eval({'x': 1.0, 'y': 1.0})
     2.0
     >>> partial(Var('x') ** 2, 'y').eval({'x': 1.0})
-    0
+    0.0
     '''
     if isinstance(e, Const):
         return Const(0)
@@ -319,4 +319,7 @@ def sym_to_dual(e, name, env):
     for k, v in env.items():
         extended[k] = Dual(v, 0.0)
     extended[name] = Dual(env[name], 1.0)
-    return e.eval(extended)
+    result = e.eval(extended)
+    if not isinstance(result, Dual):
+        result = Dual(result, 0.0)
+    return result

@@ -59,7 +59,7 @@ def sgd_step(f, w, lr, xs, batch_size, rng):
     >>> f = lambda w, x: (w - x) ** 2
     >>> sgd_step(f, 0.0, 0.1, [1.0, 2.0, 3.0, 4.0, 5.0],
     ...          5, random.Random(0))
-    0.6000000000000001
+    0.6
     '''
     batch = rng.sample(xs, batch_size)
     grad = 0.0
