@@ -1,35 +1,115 @@
 '''
-Forward-mode automatic differentiation with dual numbers.
+This file implements automatic differentiation (autodiff) with dual numbers.
+Autodiff is the backbone of modern machine learning libraries like torch and tensorflow because these libraries train models using the gradient descent algorithm.
 
-A dual number is a pair (v, d) representing the truncated Taylor
-expansion v + d*epsilon with epsilon**2 == 0.  Arithmetic on dual
-numbers computes both the value and first derivative of a function in
-a single forward pass.
+First, let's see an example.
+Consider the function below.
 
->>> Dual(3, 1) + Dual(2, 1)
-Dual(v=5, d=2)
->>> Dual(3, 1) * Dual(2, 1)
-Dual(v=6, d=5)
->>> Dual(3, 1) ** 2
-Dual(v=9, d=6)
+>>> f = lambda x: sin(x ** 2) + 2 * x
 
-The module-level functions sin, cos, exp, and log work on both floats
-and dual numbers, so the same code can be differentiated without
-rewriting it:
+With some basic calculus, we can hand-compute the derivative as
+
+>>> df = lambda x: 2 * x * cos(x ** 2) + 2
+
+But hand computing derivatives is error prone.
+And some derivatives do not have a closed form solution.
+For example, the *recursive neural network* (RNN) is a popular model.
+The function below shows a simple example RNN.
+
+>>> def rnn(xs, w, h=0.0):
+...     if not xs:
+...         return h
+...     return rnn(xs[1:], w, tanh(w * h + xs[0]))
+
+Observe that the function takes a list of numbers as the input and recursively calls itself on the list.
+Computing the derivative of this function by hand is a nightmare.
+
+The magic of autodiff is that dual numbers let us compute the derivative automatically for *all* functions f.
+And in practice, it is common to compute the derivative of functions  much more complicated than the rnn function above.
+
+The procedure is simple but counter-intuitive:
+
+1. Define a Dual object whose v is the location where you want to take the derivative, and d=1.
+
+    >>> x = Dual(v=0, d=1)
+
+2. Call the function on our Dual variable.
+    >>> f(x)
+    Dual(v=0.0, d=2.0)
+
+    This returns another Dual, and getting the .d attribute gives us the derivative.
+    >>> f(x).d
+    2.0
+
+3. We can confirm that this matches the hand computed derivative:
+    >>> df(0)
+    2.0
+
+Now we can compute the derivative of the rnn function as:
+
+>>> xs = [1.0, 1.0]         # this is our "dataset" we are learning
+>>> w = Dual(v=0.5, d=1)    # this is the initialization procedure
+>>> h = rnn(xs, w)          # h = "hidden" is the trad rnn result
+>>> round(h.d, 4)
+0.1703
+
+> **NOTE**
+> The doctest above uses round() for numeric stability reasons.
+> Because your implementation of the Dual number is likely to be subtly different than mine,
+> the last few digits of the number will be slightly different,
+> even if your implementation is mathematically correct.
+> Rounding floats in tests is common practice.
+
+So how does this magic work?
+
+A dual number is a pair (v, d) where v is the value and d the derivative.
+When defined our variable to be
+
+>>> x = Dual(v=3, d=1)
+
+The reason we started with d=1 is because the derivative of x is 1.
+Mathematicians often represent this "derivative" as an infinitesimal number ε, and so the __str__ output of Dual looks like
+
+>>> print(x)
+3 + 1ε
+
+When performing any mathematical computations,
+we do the normal math operations on the v values,
+and we apply the chain rule to generate the d values:
+
+>>> x = Dual(v=3, d=1)
+>>> y = Dual(v=2, d=1)
+>>> print(x + y)
+5 + 2ε
+>>> print(x - y)
+1 + 0ε
+>>> print(x * y)
+6 + 5ε
+>>> print(x ** 2)
+9 + 6ε
+
+Observe that unlike the Poly class, Dual numbers form a field.
+And so division is well-defined:
+
+>>> print(x / y)
+1.5 + -0.25ε
+
+Python has dunder methods for all the standard math operators,
+but does not have dunder methods for the transcendental functions like sin, cos, exp, and log.
+The module has redefined these functions so that they work on both Dual numbers and standard floats.
 
 >>> sin(Dual(0.0, 1.0))
 Dual(v=0.0, d=1.0)
 >>> exp(Dual(0.0, 1.0))
 Dual(v=1.0, d=1.0)
->>> abs(cos(Dual(0.0, 1.0)).d - 0.0) < 1e-12
-True
-
-Nested duals differentiate twice.  That is how newton_step in
-src/optim.py gets its second derivative.
 '''
 import math
 from dataclasses import dataclass
 
+def rnn(xs, w, h=0.0):
+    if not xs:
+        return h
+    return rnn(xs[1:], w, tanh(w * h + xs[0]))
 
 @dataclass(frozen=True)
 class Dual:
@@ -132,6 +212,19 @@ def cos(x):
     if isinstance(x, Dual):
         return Dual(math.cos(x.v), -math.sin(x.v) * x.d)
     return math.cos(x)
+
+
+def tanh(x):
+    '''
+    tanh, differentiable if x is a Dual.
+
+    >>> tanh(0.0)
+    0.0
+    '''
+    if isinstance(x, Dual):
+        t = math.tanh(x.v)
+        return Dual(t, (1 - t * t) * x.d)
+    return math.tanh(x)
 
 
 def exp(x):

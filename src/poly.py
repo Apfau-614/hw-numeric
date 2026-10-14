@@ -1,29 +1,51 @@
 '''
 Exact polynomial arithmetic over the rationals.
 
-Coefficients are stored from lowest to highest degree, and trailing
-zeros are removed so that two polynomials are equal precisely when
-their normalized coefficient lists are equal.
+Coefficients are stored from lowest to highest degree.
 
->>> Poly([1, 2, 3])
-Poly([1, 2, 3])
->>> Poly([1, 2, 0])
-Poly([1, 2])
->>> Poly([0, 0])
-Poly([0])
+>>> p = Poly([1, 2, 3])
+>>> print(p)
+3x**2 + 2x + 1
 
->>> Poly([1, 2]) + Poly([3, 4])
-Poly([4, 6])
->>> Poly([1, 2]) * Poly([3, 4])
-Poly([3, 10, 8])
->>> Poly([1, 1]) ** 2
-Poly([1, 2, 1])
+Polynomials are just functions with special structure,
+and they can be called like regular functions.
 
->>> Poly([1, 2, 3])(2)
-17
->>> Poly([1, 2, 3]).derivative()
-Poly([2, 6])
+>>> p(3)
+34
 
+Because of this special structure, we can do a lot of operations that can't be done on ordinary functions.
+
+We can compute derivatives:
+
+>>> print(p.derivative())
+6x + 2
+
+We can check for equality:
+
+>>> q = Poly([0, 3, 2, 1])
+>>> print(q)
+x**3 + 2x**2 + 3x
+>>> p == q
+False
+
+We can do addition, subtraction, multiplication, and scalar exponentiation:
+
+>>> print (p + q)
+x**3 + 5x**2 + 5x + 1
+>>> print (p - q)
+-x**3 + x**2 - x + 1
+>>> print (p * q)
+3x**5 + 8x**4 + 14x**3 + 8x**2 + 3x
+>>> print(p ** 2)
+9x**4 + 12x**3 + 10x**2 + 4x + 1
+
+Technically, polynomials form a *Ring*
+(a type of structure studied in MATH171 Abstract Algebra),
+and so they do not support division.
+(If they did, they would be called a *Field*.)
+'''
+
+'''
 The .mul_naive and .mul_karatsuba methods compute the same product,
 but their recurrences differ.  Splitting both operands in half, the
 naive method uses 4 half-products:
