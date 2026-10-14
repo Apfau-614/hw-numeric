@@ -45,25 +45,6 @@ and so they do not support division.
 (If they did, they would be called a *Field*.)
 '''
 
-'''
-The .mul_naive and .mul_karatsuba methods compute the same product,
-but their recurrences differ.  Splitting both operands in half, the
-naive method uses 4 half-products:
-
-    T(n) = 4 T(n/2) + Theta(n)  =>  T(n) = Theta(n^2)
-
-and Karatsuba uses only 3, by writing z1 = (a0+a1)(b0+b1):
-
-    T(n) = 3 T(n/2) + Theta(n)  =>  T(n) = Theta(n^log2 3)
-
-The Python recursion overhead hides the improvement at small n -- the
-KARATSUBA_THRESHOLD below cuts the recursion off so the base case
-does the work with a tight double loop.  At n large enough (thousands
-of coefficients) the Karatsuba version is measurably faster, and the
-unit tests here verify equivalence and the log2(3) call count.
-'''
-KARATSUBA_THRESHOLD = 32
-
 
 def _poly_str(coeffs):
     '''
@@ -339,8 +320,6 @@ def _karatsuba(a, b):
         T(n) = 3 T(n/2) + Theta(n)  =>  T(n) = Theta(n^log2 3)
 
     instead of the naive T(n) = 4 T(n/2) + Theta(n) = Theta(n^2).
-    Below KARATSUBA_THRESHOLD the base case is a tight double loop,
-    so the Python call overhead does not dominate at small n.
 
     >>> _karatsuba([1, 2], [3, 4])
     [3, 10, 8]
@@ -350,7 +329,7 @@ def _karatsuba(a, b):
     [0, 0, 0]
     '''
     n = max(len(a), len(b))
-    if n <= KARATSUBA_THRESHOLD:
+    if n <= 32:
         out = [0] * (len(a) + len(b) - 1)
         for i, ai in enumerate(a):
             for j, bj in enumerate(b):
