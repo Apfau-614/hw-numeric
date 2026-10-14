@@ -1,9 +1,5 @@
 '''
 Property tests for src.poly.
-
-The Karatsuba test uses the student's own mul_naive as the oracle,
-exactly like test_sorting compares merge_sorted against the standard
-library.
 '''
 import pytest
 
