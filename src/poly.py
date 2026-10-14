@@ -322,46 +322,84 @@ class Poly:
         >>> Poly([1, 2]) .mul_karatsuba(Poly([3, 4]))
         Poly([3, 10, 8])
         '''
-        return Poly(Poly._karatsuba(self.coeffs, other.coeffs))
+        return Poly(_karatsuba(self.coeffs, other.coeffs))
 
-    @staticmethod
-    def _karatsuba(a, b):
-        n = max(len(a), len(b))
-        if n <= KARATSUBA_THRESHOLD:
-            out = [0] * (len(a) + len(b) - 1)
-            for i, ai in enumerate(a):
-                for j, bj in enumerate(b):
-                    out[i + j] += ai * bj
-            return out
-        if len(a) < n:
-            a = list(a) + [0] * (n - len(a))
-        if len(b) < n:
-            b = list(b) + [0] * (n - len(b))
-        h = (n + 1) // 2
-        a0, a1 = a[:h], a[h:]
-        b0, b1 = b[:h], b[h:]
-        z0 = Poly._karatsuba(a0, b0)
-        z2 = Poly._karatsuba(a1, b1)
-        z1 = Poly._karatsuba(Poly._add_coeffs(a0, a1),
-                             Poly._add_coeffs(b0, b1))
-        mid = Poly._sub_coeffs(Poly._sub_coeffs(z1, z0), z2)
-        out = [0] * (2 * n - 1)
-        for i, v in enumerate(z0):
-            out[i] += v
-        for i, v in enumerate(z2):
-            out[2 * h + i] += v
-        for i, v in enumerate(mid):
-            out[h + i] += v
+
+def _karatsuba(a, b):
+    '''
+    Product of two coefficient lists by Karatsuba's algorithm.
+
+    The inputs are coefficient lists, lowest degree first, and the
+    return value is the coefficient list of the product.  The
+    recursion splits both operands at the midpoint and uses only
+    three half-size products -- z0 = a0 b0, z2 = a1 b1, and
+    z1 = (a0 + a1)(b0 + b1) -- recovering the middle piece as
+    z1 - z0 - z2.  That gives the recurrence
+
+        T(n) = 3 T(n/2) + Theta(n)  =>  T(n) = Theta(n^log2 3)
+
+    instead of the naive T(n) = 4 T(n/2) + Theta(n) = Theta(n^2).
+    Below KARATSUBA_THRESHOLD the base case is a tight double loop,
+    so the Python call overhead does not dominate at small n.
+
+    >>> _karatsuba([1, 2], [3, 4])
+    [3, 10, 8]
+    >>> _karatsuba([1], [1])
+    [1]
+    >>> _karatsuba([0], [1, 2, 3])
+    [0, 0, 0]
+    '''
+    n = max(len(a), len(b))
+    if n <= KARATSUBA_THRESHOLD:
+        out = [0] * (len(a) + len(b) - 1)
+        for i, ai in enumerate(a):
+            for j, bj in enumerate(b):
+                out[i + j] += ai * bj
         return out
+    if len(a) < n:
+        a = list(a) + [0] * (n - len(a))
+    if len(b) < n:
+        b = list(b) + [0] * (n - len(b))
+    h = (n + 1) // 2
+    a0, a1 = a[:h], a[h:]
+    b0, b1 = b[:h], b[h:]
+    z0 = _karatsuba(a0, b0)
+    z2 = _karatsuba(a1, b1)
+    z1 = _karatsuba(_add_coeffs(a0, a1), _add_coeffs(b0, b1))
+    mid = _sub_coeffs(_sub_coeffs(z1, z0), z2)
+    out = [0] * (2 * n - 1)
+    for i, v in enumerate(z0):
+        out[i] += v
+    for i, v in enumerate(z2):
+        out[2 * h + i] += v
+    for i, v in enumerate(mid):
+        out[h + i] += v
+    return out
 
-    @staticmethod
-    def _add_coeffs(a, b):
-        n = max(len(a), len(b))
-        return [(a[i] if i < len(a) else 0)
-                + (b[i] if i < len(b) else 0) for i in range(n)]
 
-    @staticmethod
-    def _sub_coeffs(a, b):
-        n = max(len(a), len(b))
-        return [(a[i] if i < len(a) else 0)
-                - (b[i] if i < len(b) else 0) for i in range(n)]
+def _add_coeffs(a, b):
+    '''
+    Coefficient-wise sum of two lists, padding the shorter with 0.
+
+    >>> _add_coeffs([1, 2], [3, 4])
+    [4, 6]
+    >>> _add_coeffs([1, 2, 3], [10])
+    [11, 2, 3]
+    '''
+    n = max(len(a), len(b))
+    return [(a[i] if i < len(a) else 0)
+            + (b[i] if i < len(b) else 0) for i in range(n)]
+
+
+def _sub_coeffs(a, b):
+    '''
+    Coefficient-wise difference of two lists, padding the shorter.
+
+    >>> _sub_coeffs([3, 4], [1, 2])
+    [2, 2]
+    >>> _sub_coeffs([1], [1, 2, 3])
+    [0, -2, -3]
+    '''
+    n = max(len(a), len(b))
+    return [(a[i] if i < len(a) else 0)
+            - (b[i] if i < len(b) else 0) for i in range(n)]
