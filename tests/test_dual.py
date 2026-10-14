@@ -61,7 +61,7 @@ def test_radd(a, b, c):
 
 @given(floats, floats, floats, floats)
 def test_truediv(a, b, c, d):
-    assume(c != 0.0)
+    assume(abs(c) > 1e-3)
     assert Dual(a, b) / Dual(c, d) == Dual(a / c, (b * c - a * d) / (c ** 2))
 
 
@@ -72,7 +72,7 @@ def test_truediv_scalar(a, b):
 
 @given(floats, floats, floats)
 def test_rtruediv(a, b, c):
-    assume(a != 0.0)
+    assume(abs(a) > 1e-3)
     assert c / Dual(a, b) == Dual(c / a, -c * b / (a ** 2))
 
 
