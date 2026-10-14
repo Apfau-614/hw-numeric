@@ -4,7 +4,7 @@ worked examples in each module docstring are checked by CI too.
 '''
 import doctest
 
-from src import dual, poly
+from src import dual, poly, optim
 
 
 def _run(module):
@@ -17,3 +17,7 @@ def test_doctests_dual():
 
 def test_doctests_poly():
     assert _run(poly) == 0
+
+
+def test_doctests_optim():
+    assert _run(optim) == 0

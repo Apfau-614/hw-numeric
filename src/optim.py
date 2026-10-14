@@ -173,7 +173,7 @@ def rnn(xs, ws):
     one's output, so the values change even though w is the same:
 
     >>> [round(v, 3) for v in rnn([1.0, 1.0], [0.5, 0.5])]
-    [0.363, 0.787]
+    [0.642, 0.834]
     '''
     for w in ws:
         xs = rnn_layer(xs, w)

@@ -62,9 +62,6 @@ does the work with a tight double loop.  At n large enough (thousands
 of coefficients) the Karatsuba version is measurably faster, and the
 unit tests here verify equivalence and the log2(3) call count.
 '''
-from fractions import Fraction
-
-
 KARATSUBA_THRESHOLD = 32
 
 
@@ -180,8 +177,8 @@ class Poly:
         b = other._padded(n)
         return a == b
 
-    def __hash__(self):
-        return hash(tuple(self.coeffs))
+    #def __hash__(self):
+        #return hash(tuple(self.coeffs))
 
     def _padded(self, n):
         return list(self.coeffs) + [0] * (n - len(self.coeffs))
