@@ -166,7 +166,9 @@ def _karatsuba(a, b):
     uses only three half-size products.
     That gives the recurrence
 
-        T(n) = 3 T(n/2) + Theta(n)  =>  T(n) = Theta(n^log2 3)
+        T(n) = 3 T(n/2) + Theta(n)
+             = Theta(n^log2 3)          # by master theorem
+             = O(n^1.586)               # by defn of O()
 
     See <https://www.geeksforgeeks.org/dsa/multiply-two-polynomials-2/> for a basic tutorial/implementation you can adapt for your code.
 
