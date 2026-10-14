@@ -120,13 +120,13 @@ class Poly:
     >>> Poly([1, 2]) == 1
     False
 
-    Because `__eq__` is defined, `__hash__` is defined too, so that
-    polynomials may be used as dict keys and set elements:
+    `Poly` is a mutable value type, so it is deliberately unhashable
+    and cannot be used as a dict key or a set element:
 
-    >>> hash(Poly([1, 2, 3])) == hash(Poly([1, 2, 3, 0]))
-    True
-    >>> len({Poly([1, 2]), Poly([1, 2]), Poly([3, 4])})
-    2
+    >>> hash(Poly([1, 2, 3]))
+    Traceback (most recent call last):
+        ...
+    TypeError: unhashable type: 'Poly'
 
     The `repr` is the constructor call, so `eval(repr(p)) == p` for
     every Poly.  The `str` is the usual algebraic notation, with terms
@@ -177,8 +177,8 @@ class Poly:
         b = other._padded(n)
         return a == b
 
-    #def __hash__(self):
-        #return hash(tuple(self.coeffs))
+    # Mutable, so not hashable.
+    __hash__ = None
 
     def _padded(self, n):
         return list(self.coeffs) + [0] * (n - len(self.coeffs))
@@ -193,15 +193,10 @@ class Poly:
     __radd__ = __add__
 
     def __iadd__(self, other):
-        if not isinstance(other, Poly):
+        result = self + other
+        if result is NotImplemented:
             return NotImplemented
-        n = max(len(self.coeffs), len(other.coeffs))
-        a, b = self._padded(n), other._padded(n)
-        for i in range(n):
-            a[i] += b[i]
-        while len(a) > 1 and a[-1] == 0:
-            a.pop()
-        self.coeffs = a
+        self.coeffs = result.coeffs
         return self
 
     def __neg__(self):
@@ -212,12 +207,26 @@ class Poly:
             return NotImplemented
         return self + (-other)
 
+    def __isub__(self, other):
+        result = self - other
+        if result is NotImplemented:
+            return NotImplemented
+        self.coeffs = result.coeffs
+        return self
+
     def __mul__(self, other):
         if not isinstance(other, Poly):
             return NotImplemented
         return self.mul_naive(other)
 
     __rmul__ = __mul__
+
+    def __imul__(self, other):
+        result = self * other
+        if result is NotImplemented:
+            return NotImplemented
+        self.coeffs = result.coeffs
+        return self
 
     def __pow__(self, n):
         if not isinstance(n, int):
@@ -232,6 +241,13 @@ class Poly:
             base = base * base
             n >>= 1
         return result
+
+    def __ipow__(self, n):
+        result = self ** n
+        if result is NotImplemented:
+            return NotImplemented
+        self.coeffs = result.coeffs
+        return self
 
     def __call__(self, x):
         return self.eval_horner(x)
