@@ -3,13 +3,20 @@ Exact polynomial arithmetic over the rationals.
 
 Coefficients are stored from lowest to highest degree.
 
+#you have to figure out what __dunder methods to implement
+#recall: print function calls the __str__
+
 >>> p = Poly([1, 2, 3])
->>> print(p)
+>>> p                   #calls __repr__
+Poly([1, 2, 3])
+>>> print(p)            #calls __str__
+
 3x**2 + 2x + 1
 
 Polynomials are just functions with special structure,
 and they can be called like regular functions.
 
+#youll have to implememt __call__
 >>> p(3)
 34
 
