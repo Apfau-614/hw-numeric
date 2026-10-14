@@ -1,12 +1,9 @@
 '''
 Shared hypothesis strategies.
 
-The `poly_st` and `sym_st` strategies generate small random values
+The `poly_st` and `dual_st` strategies generate small random values
 that the property tests can check against algebraic laws (commutative
-rings, chain rules, etc.) without an external oracle.  Anything the
-poly and sym trees can be reduced to is compared against the same
-operation on the other representation, so no two implementations of
-the same algorithm are trusted unconditionally.
+rings, product and chain rules, etc.) without an external oracle.
 '''
 import hypothesis.strategies as st
 

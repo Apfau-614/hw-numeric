@@ -3,8 +3,7 @@ Property tests for src.poly.
 
 The Karatsuba test uses the student's own mul_naive as the oracle,
 exactly like test_sorting compares merge_sorted against the standard
-library.  The cross-type test at the bottom evaluates
-sym_to_poly(e) at a point and compares with e.eval.
+library.
 '''
 from hypothesis import assume, given
 import hypothesis.strategies as st
