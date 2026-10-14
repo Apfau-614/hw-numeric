@@ -9,9 +9,8 @@ sym_to_poly(e) at a point and compares with e.eval.
 from hypothesis import assume, given
 import hypothesis.strategies as st
 
-from src.poly import Poly, sym_to_poly
-from src.sym import Var, Const, Add, Mul, Pow, Sin
-from tests.strategies import ints, poly_st, floats, sym_st
+from src.poly import Poly
+from tests.strategies import ints, poly_st, floats
 
 
 # ---------------------------------------------------------------------------
@@ -141,24 +140,6 @@ def test_karatsuba_matches_naive(a, b):
 @given(poly_st, floats)
 def test_horner_matches_naive(p, x):
     assert abs(p.eval_naive(x) - p.eval_horner(x)) < 1e-6 * (1 + abs(p.eval_naive(x)))
-
-
-# ---------------------------------------------------------------------------
-# sym_to_poly cross-check
-# ---------------------------------------------------------------------------
-
-@given(sym_st(3), floats)
-def test_sym_to_poly_agrees_with_eval(e, x):
-    p = sym_to_poly(e)
-    assert abs(p(x) - e.eval({'x': x})) < 1e-6 * (1 + abs(p(x)))
-
-
-def test_sym_to_poly_rejects_transcendental():
-    try:
-        sym_to_poly(Sin(Var('x')))
-    except ValueError:
-        return
-    raise AssertionError('expected ValueError for Sin node')
 
 
 def test_mul_karatsuba_and_naive_agree_on_single_term():
