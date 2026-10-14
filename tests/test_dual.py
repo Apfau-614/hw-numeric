@@ -7,7 +7,7 @@ machine precision.
 '''
 import math
 
-from hypothesis import given
+from hypothesis import assume, given
 import hypothesis.strategies as st
 
 from src.dual import Dual, sin, cos, exp, log
@@ -44,6 +44,38 @@ def test_sub(a, b):
     assert Dual(a, b) - Dual(a, b) == Dual(0.0, 0.0)
 
 
+@given(floats, floats, floats, floats)
+def test_sub_between_distinct_duals(a, b, c, d):
+    assert Dual(a, b) - Dual(c, d) == Dual(a - c, b - d)
+
+
+@given(floats, floats, floats)
+def test_rsub(a, b, c):
+    assert c - Dual(a, b) == Dual(c - a, -b)
+
+
+@given(floats, floats, floats)
+def test_radd(a, b, c):
+    assert c + Dual(a, b) == Dual(a + c, b)
+
+
+@given(floats, floats, floats, floats)
+def test_truediv(a, b, c, d):
+    assume(c != 0.0)
+    assert Dual(a, b) / Dual(c, d) == Dual(a / c, (b * c - a * d) / (c ** 2))
+
+
+@given(floats, floats)
+def test_truediv_scalar(a, b):
+    assert Dual(a, b) / 2 == Dual(a / 2, b / 2)
+
+
+@given(floats, floats, floats)
+def test_rtruediv(a, b, c):
+    assume(a != 0.0)
+    assert c / Dual(a, b) == Dual(c / a, -c * b / (a ** 2))
+
+
 @given(floats)
 def test_pow_int(x):
     assert Dual(x, 1.0) ** 3 == Dual(x ** 3, 3 * x ** 2)
@@ -51,6 +83,12 @@ def test_pow_int(x):
 
 def test_pow_zero():
     assert Dual(5.0, 3.0) ** 0 == Dual(1.0, 0.0)
+
+
+def test_pow_dual_known_value():
+    d = Dual(2.0, 1.0) ** Dual(3.0, 0.0)
+    assert abs(d.v - 8.0) < 1e-12
+    assert abs(d.d - 12.0) < 1e-12
 
 
 # ---------------------------------------------------------------------------
@@ -91,6 +129,16 @@ def test_elementary_functions_accept_floats():
 def test_not_implemented_equality():
     assert not (Dual(1.0, 0.0) == 1)
     assert Dual(1.0, 0.0) != 1
+
+
+def test_eq_scalar_both_directions():
+    assert not (1 == Dual(1.0, 0.0))
+    assert 1 != Dual(1.0, 0.0)
+
+
+@given(dual_st)
+def test_hash_eq_contract(d):
+    assert hash(d) == hash(Dual(d.v, d.d))
 
 
 # ---------------------------------------------------------------------------

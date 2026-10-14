@@ -5,6 +5,8 @@ The Karatsuba test uses the student's own mul_naive as the oracle,
 exactly like test_sorting compares merge_sorted against the standard
 library.
 '''
+import pytest
+
 from hypothesis import assume, given
 import hypothesis.strategies as st
 
@@ -36,6 +38,38 @@ def test_mul_distributive(a, b, c):
     assert a * (b + c) == a * b + a * c
 
 
+@given(poly_st, poly_st, poly_st)
+def test_mul_associative(a, b, c):
+    assert (a * b) * c == a * (b * c)
+
+
+@given(poly_st)
+def test_additive_identity(a):
+    assert a + Poly([0]) == a
+    assert Poly([0]) + a == a
+
+
+@given(poly_st)
+def test_multiplicative_identity(a):
+    assert a * Poly([1]) == a
+
+
+@given(poly_st)
+def test_additive_inverse(a):
+    assert a + (-a) == Poly([0])
+    assert a - a == Poly([0])
+
+
+@given(poly_st, poly_st)
+def test_sub(a, b):
+    assert a - b == a + (-b)
+
+
+@given(poly_st)
+def test_neg_involution(a):
+    assert -(-a) == a
+
+
 @given(poly_st)
 def test_derivative_is_linear(a):
     b = Poly([1, 2, 3])
@@ -54,6 +88,12 @@ def test_derivative_power_rule():
 def test_eq_ignores_trailing_zeros():
     assert Poly([1, 2, 3]) == Poly([1, 2, 3, 0, 0])
     assert Poly([0, 0, 0]) == Poly([0])
+
+
+def test_eq_non_poly_is_not_equal():
+    assert Poly([1, 2]) != 1
+    assert Poly([1, 2]) != 'x'
+    assert not (1 == Poly([1, 2]))
 
 
 def test_hash_eq_contract():
@@ -119,6 +159,20 @@ def test_pow():
     assert Poly([1, 1]) ** 2 == Poly([1, 2, 1])
     assert Poly([1, 1]) ** 0 == Poly([1])
     assert Poly([0, 1]) ** 5 == Poly([0, 0, 0, 0, 0, 1])
+
+
+def test_pow_one_is_identity():
+    assert Poly([1, 2, 3]) ** 1 == Poly([1, 2, 3])
+
+
+def test_pow_negative_raises():
+    with pytest.raises(ValueError):
+        Poly([1, 1]) ** -1
+
+
+def test_call_matches_horner():
+    p = Poly([1, 2, 3])
+    assert p(2) == p.eval_horner(2) == 17
 
 
 # ---------------------------------------------------------------------------
