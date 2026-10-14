@@ -207,6 +207,13 @@ def test_karatsuba_matches_naive(a, b):
     assert pa.mul_karatsuba(pb) == pa.mul_naive(pb)
 
 
+def test_mul_karatsuba_and_naive_agree_on_single_term():
+    a = Poly([0] * 100 + [1])  # x^100
+    b = Poly([0] * 100 + [1])  # x^100
+    assert a.mul_naive(b) == Poly([0] * 200 + [1])
+    assert a.mul_karatsuba(b) == Poly([0] * 200 + [1])
+
+
 # ---------------------------------------------------------------------------
 # Horner vs naive
 # ---------------------------------------------------------------------------
@@ -214,10 +221,3 @@ def test_karatsuba_matches_naive(a, b):
 @given(poly_st, floats)
 def test_horner_matches_naive(p, x):
     assert abs(p.eval_naive(x) - p.eval_horner(x)) < 1e-6 * (1 + abs(p.eval_naive(x)))
-
-
-def test_mul_karatsuba_and_naive_agree_on_single_term():
-    a = Poly([0] * 100 + [1])  # x^100
-    b = Poly([0] * 100 + [1])  # x^100
-    assert a.mul_naive(b) == Poly([0] * 200 + [1])
-    assert a.mul_karatsuba(b) == Poly([0] * 200 + [1])
