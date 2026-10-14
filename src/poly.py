@@ -326,8 +326,6 @@ class Poly:
 
     @staticmethod
     def _karatsuba(a, b):
-        if not a or not b:
-            return [0]
         n = max(len(a), len(b))
         if n <= KARATSUBA_THRESHOLD:
             out = [0] * (len(a) + len(b) - 1)
@@ -335,6 +333,10 @@ class Poly:
                 for j, bj in enumerate(b):
                     out[i + j] += ai * bj
             return out
+        if len(a) < n:
+            a = list(a) + [0] * (n - len(a))
+        if len(b) < n:
+            b = list(b) + [0] * (n - len(b))
         h = (n + 1) // 2
         a0, a1 = a[:h], a[h:]
         b0, b1 = b[:h], b[h:]
@@ -343,7 +345,7 @@ class Poly:
         z1 = Poly._karatsuba(Poly._add_coeffs(a0, a1),
                              Poly._add_coeffs(b0, b1))
         mid = Poly._sub_coeffs(Poly._sub_coeffs(z1, z0), z2)
-        out = [0] * (len(a) + len(b) - 1)
+        out = [0] * (2 * n - 1)
         for i, v in enumerate(z0):
             out[i] += v
         for i, v in enumerate(z2):
