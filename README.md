@@ -5,7 +5,7 @@
 A miniature numeric programming library built around two related types, each implemented with the same Python dunder protocol.
 Types like these form the basis for machine learning libraries like pytorch.
 
-<img src=img/meme.jpg width=300px />
+<img src=img/meme.jpeg width=300px />
 
 ## The two types
 
