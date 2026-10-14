@@ -82,7 +82,7 @@ def test_derivative_power_rule():
 
 
 # ---------------------------------------------------------------------------
-# equality, hashing, iadd
+# equality, unhashability, in-place arithmetic
 # ---------------------------------------------------------------------------
 
 def test_eq_ignores_trailing_zeros():
@@ -96,10 +96,11 @@ def test_eq_non_poly_is_not_equal():
     assert not (1 == Poly([1, 2]))
 
 
-def test_hash_eq_contract():
-    a = Poly([1, 2, 3])
-    b = Poly([1, 2, 3, 0])
-    assert a == b and hash(a) == hash(b)
+def test_poly_is_unhashable():
+    with pytest.raises(TypeError):
+        hash(Poly([1, 2, 3]))
+    with pytest.raises(TypeError):
+        {Poly([1, 2])}
 
 
 # ---------------------------------------------------------------------------
@@ -153,6 +154,30 @@ def test_iadd_returns_self():
     q += Poly([1, 2])
     assert id(q) == q_id
     assert q == Poly([4, 6])
+
+
+def test_isub_returns_self():
+    q = Poly([3, 4])
+    q_id = id(q)
+    q -= Poly([1, 2])
+    assert id(q) == q_id
+    assert q == Poly([2, 2])
+
+
+def test_imul_returns_self():
+    q = Poly([3, 4])
+    q_id = id(q)
+    q *= Poly([1, 2])
+    assert id(q) == q_id
+    assert q == Poly([3, 10, 8])
+
+
+def test_ipow_returns_self():
+    q = Poly([1, 1])
+    q_id = id(q)
+    q **= 2
+    assert id(q) == q_id
+    assert q == Poly([1, 2, 1])
 
 
 def test_pow():
