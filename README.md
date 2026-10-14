@@ -1,5 +1,6 @@
 # Numeric
-[![](https://github.com/USER/numeric/workflows/tests/badge.svg)](https://github.com/USER/numeric/actions?query=workflow%3Atests)
+[![tests-poly](https://github.com/mikeizbicki/numeric/actions/workflows/tests-poly.yml/badge.svg)](https://github.com/mikeizbicki/numeric/actions/workflows/tests-poly.yml)
+[![tests-dual](https://github.com/mikeizbicki/numeric/actions/workflows/tests-dual.yml/badge.svg)](https://github.com/mikeizbicki/numeric/actions/workflows/tests-dual.yml)
 
 A miniature numeric programming library built around two related
 types, each implemented with the same Python dunder protocol.

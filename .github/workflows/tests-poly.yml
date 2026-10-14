@@ -1,4 +1,4 @@
-name: tests
+name: tests-poly
 on:
   push:
     branches: ['*']
@@ -23,7 +23,7 @@ jobs:
       - name: Run linter
         run: |
           pip3 install flake8 pep8-naming
-          flake8 src/ --ignore=E501
+          flake8 src/poly.py --ignore=E501
       - name: Run tests
         run: |
-          python -m pytest tests/
+          python -m pytest tests/test_poly.py tests/test_doctests_poly.py
