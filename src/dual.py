@@ -25,7 +25,7 @@ Observe that the function takes a list of numbers as the input and recursively c
 Computing the derivative of this function by hand is a nightmare.
 
 The magic of autodiff is that dual numbers let us compute the derivative automatically for *all* functions f.
-And in practice, it is common to compute the derivative of functions  much more complicated than the rnn function above.
+And in practice, it is common to compute the derivative of functions much more complicated than the rnn function above.
 
 The procedure is simple but counter-intuitive:
 
