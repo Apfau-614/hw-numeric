@@ -169,6 +169,10 @@ def tanh(x):
     # this is the only one of these functions you need to implement
     # there's only one doctest here,
     # but lots of other tests depend on tanh
+    if isinstance(x, Dual):
+        t = math.tanh(x.v)
+        return Dual(t, (1 - t ** 2) * x.d)
+    return math.tanh(x)
 
 
 def exp(x):
