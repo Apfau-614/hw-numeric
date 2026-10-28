@@ -134,6 +134,64 @@ class Dual:
     >>> print(Dual(1, 2) + Dual(3, 4))
     4 + 6ε
     '''
+    def __init__(self, v, d=0.0):
+        self.v = v
+        self.d = d
+
+    def __repr__(self):
+        return f'Dual(v={self.v!r}, d={self.d!r})'
+
+    def __str__(self):
+        return f'{self.v} + {self.d}ε'
+
+    def __eq__(self, other):
+        if not isinstance(other, Dual):
+            return NotImplemented
+        return self.v == other.v and self.d == other.d
+
+    def __hash__(self):
+        return hash((self.v, self.d))
+
+    def __neg__(self):
+        return Dual(-self.v, -self.d)
+
+    def __add__(self, other):
+        other = _lift(other)
+        return Dual(self.v + other.v, self.d + other.d)
+
+    __radd__ = __add__
+
+    def __sub__(self, other):
+        return self + (-_lift(other))
+
+    def __rsub__(self, other):
+        return _lift(other) - self
+
+    def __mul__(self, other):
+        other = _lift(other)
+        return Dual(self.v * other.v, self.d * other.v + self.v * other.d)
+
+    __rmul__ = __mul__
+
+    def __truediv__(self, other):
+        other = _lift(other)
+        return Dual(self.v / other.v,
+                    (self.d * other.v - self.v * other.d) / (other.v ** 2))
+
+    def __rtruediv__(self, other):
+        return _lift(other) / self
+
+    def __pow__(self, n):
+        if isinstance(n, Dual):
+            v = self.v ** n.v
+            return Dual(v, n.v * self.v ** (n.v - 1) * self.d + v * math.log(self.v) * n.d)
+        if n == 0:
+            return Dual(1, 0)
+        return Dual(self.v ** n, n * self.v ** (n - 1) * self.d)
+
+
+def _lift(x):
+    return x if isinstance(x, Dual) else Dual(x, 0)
 
 
 def sin(x):
