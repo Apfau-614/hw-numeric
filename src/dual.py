@@ -105,6 +105,7 @@ Dual(v=1.0, d=1.0)
 '''
 import math
 
+
 class Dual:
     '''
     The dual number v + d*epsilon with epsilon**2 == 0.
