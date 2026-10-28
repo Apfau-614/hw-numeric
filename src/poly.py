@@ -10,7 +10,6 @@ Coefficients are stored from lowest to highest degree.
 >>> p                   #calls __repr__
 Poly([1, 2, 3])
 >>> print(p)            #calls __str__
-
 3x**2 + 2x + 1
 
 Polynomials are just functions with special structure,
