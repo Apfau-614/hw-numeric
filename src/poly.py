@@ -284,6 +284,7 @@ def _karatsuba(a, b):
         out[i + m] += z1[i]
     return out[:out_len]
 
+
 def _add(p, q):
     n = max(len(p), len(q))
     p = p + [0] * (n - len(p))
