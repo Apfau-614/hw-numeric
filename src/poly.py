@@ -150,6 +150,12 @@ class Poly:
     def derivative(self):
         return Poly([i * c for i, c in enumerate(self.coeffs)][1:])
 
+    def _add(p, q):
+        n = max(len(p), len(q))
+        p = p + [0] * (n - len(p))
+        q = q + [0] * (n - len(q))
+        return [x + y for x, y in zip(p, q)]
+
     def __add__(self, other):
         return Poly(_add(self.coeffs, other.coeffs))
 
@@ -203,7 +209,6 @@ class Poly:
         for i, c in enumerate(self.coeffs):
             total += c * x ** i
         return total
-
 
     def eval_horner(self, x):
         '''
@@ -284,7 +289,6 @@ def _karatsuba(a, b):
     for i in range(len(z1)):
         out[i + m] += z1[i]
     return out[:out_len]
-
 
     def _add(p, q):
         n = max(len(p), len(q))
